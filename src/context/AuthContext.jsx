@@ -1,0 +1,228 @@
+import { createContext, useState, useContext, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
+const AuthContext = createContext();
+const API_URL = "https://686a8aede559eba9087045fc.mockapi.io/api/users";
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  //----------------------------------//
+  //----------------------------------//
+  const login = async (credentials) => {
+    setIsLoading(true);
+    try {
+      //obtener todos los usuarios
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error("Error en la petición");
+      const data = await response.json();
+
+      //filtrar usuario por email
+      const userData = data.find(
+        (user) => user.email === credentials.email.trim().toLowerCase()
+      );
+      if (!userData) throw new Error("Usuario no encontrado");
+
+      if (userData.password !== credentials.password)
+        throw new Error("Contraseña incorrecta");
+
+      //borrar password de objeto userData
+      const { password, ...safeUser } = userData;
+
+      setUser(safeUser);
+      setAuthorized(true);
+      localStorage.setItem("user", JSON.stringify(safeUser));
+      return { success: true, user: safeUser };
+    } catch (error) {
+      setUser(null);
+      setAuthorized(false);
+      return { success: false, message: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  //----------------------------------//
+  //----------------------------------//
+  const logout = () => {
+    setUser(null);
+    setAuthorized(false);
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  //----------------------------------//
+  //----------------------------------//  
+  const clearSession = () => {
+    // Solo limpia la sesión sin redirigir
+    setUser(null);
+    setAuthorized(false);
+    localStorage.removeItem("user");
+  };
+
+  //----------------------------------//
+  //----------------------------------//
+  const register = async (credentials) => {
+    try {
+      //verificar si usuario existe
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error("Error en la petición");
+      const data = await response.json();
+
+      //verificar usuario por email
+      const userExists = data.find(
+        (user) => user.email === credentials.email.trim().toLowerCase()
+      );
+      if (userExists) throw new Error("El email ya se encuentra registrado");
+
+      // Crear nuevo usuario
+      const newUser = {
+        name: credentials.name.trim(),
+        email: credentials.email.trim().toLowerCase(),
+        password: credentials.password.trim(),
+      };
+
+      //crear usuario
+      const postResponse = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+      if (!postResponse)
+        throw new Error("Error al crear el usuario, intente nuevamente");
+
+      return { success: true, user: response.data };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
+
+  //----------------------------------//
+  //----------------------------------//
+  const checkAuth = async () => {
+    try {
+      //recuperar datos local de usuario
+      const credentials = localStorage.getItem("user");
+      if (!credentials) {
+        console.log("adentro");
+        return;
+      }
+      const localUserData = JSON.parse(credentials);
+
+      //buscar usuario en DB
+      const response = await fetch(`${API_URL}/${localUserData.id}`);
+      if (!response.ok) {
+        clearSession();
+        throw new Error("Error al validar usuario");
+      }
+      const dbUserData = await response.json();
+
+      //verificar token
+      if (dbUserData.token !== localUserData.token) {
+        clearSession();
+        throw new Error("Token no válido");
+      }
+
+      if (
+        !authorized ||
+        user?.id !== localUserData.id ||
+        user?.token !== localUserData.token
+      ) {
+        console.log("autorized", authorized);
+        setAuthorized(true);
+        setUser(localUserData);
+      }
+      console.log("acceso autorizado");
+    } catch (error) {
+      // TO DO mostrar mensaje por emergente
+      console.error("Error al validar sesión:", error);
+    }
+  };
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        setIsLoading(true);
+        await checkAuth();
+        console.log(authorized);
+      } catch (error) {
+        console.error("Error al validar sesión:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyAuth();
+  }, [location.pathname]);
+
+  //----------------------------------//
+  //----------------------------------//
+  const updateUser = async (userData) => {
+    try {
+      const response = await fetch(`${API_URL}/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      // verificar respuesta
+      if (!response.ok) {
+        throw new Error("Error en la actualización");
+      }
+      // convertir respuesta
+      const newUser = await response.json();
+
+      // actualizar user y localstorage
+      setUser(newUser);
+      localStorage.setItem("user", JSON.stringify(newUser));
+      return { success: true, user: response.data };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
+
+  //----------------------------------//
+  //----------------------------------//
+  const deleteUser = async () => {
+    try {
+      console.log("delete", user);
+      const response = await fetch(`${API_URL}/${user.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Error al eliminar usuario");
+      setUser(null);
+      setAuthorized(false);
+      localStorage.removeItem("user");
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        authorized,
+        login,
+        logout,
+        register,
+        updateUser,
+        deleteUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);

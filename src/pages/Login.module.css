@@ -1,0 +1,8 @@
+.linkHoverUnderline {
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.linkHoverUnderline:hover {
+  text-decoration: underline;
+}
