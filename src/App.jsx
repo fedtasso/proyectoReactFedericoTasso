@@ -2,11 +2,11 @@ import { Container } from "react-bootstrap";
 import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./pages/Login";
+import Login from "./pages/auth/Login";
 import Home from "./pages/Home";
 import { AuthProvider } from "./context/AuthContext";
-import Register from "./pages/Register";
-import UserProfile from "./pages/UserProfile";
+import Register from "./pages/auth/Register";
+import UserProfile from "./pages/user/UserProfile";
 
 function App() {
   return (

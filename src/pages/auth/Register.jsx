@@ -1,68 +1,81 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
-import styles from './Login.module.css';
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   Form,
   Button,
   Container,
   Alert,
   Card,
-  Modal,
   Spinner,
+  Modal,
 } from "react-bootstrap";
 
-export default function Login() {
+export default function Register() {
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
+    repeatPassword: "",
+    name: "",
   });
   const [error, setError] = useState(null);
-  const { login, isLoading } = useAuth();
+  const { register, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [showAlert, setShowAlert] = useState(false);
   const [passwordChecks, setPasswordChecks] = useState({
     hasLength: false,
     hasNumber: false,
     hasUppercase: false,
   });
-  const [showAlert, setShowAlert] = useState(true);
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  
+
   //manejar envio
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
+
     //validar email
     if (!emailRegex.test(credentials.email)) {
       setError("Email inválido");
       return;
     }
-    
+
     //validar password
     if (!Object.values(passwordChecks).every(Boolean)) {
       setError("La contraseña no cumple todos los requisitos");
       return;
     }
-    
-    //verificar datos en DB
+
+    // Validación de contraseñas
+    if (credentials.password !== credentials.repeatPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+
     try {
-      const result = await login(credentials);
-      console.log("result", result.success)
+      //registrar datos en DB
+      const result = await register({
+        name: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+      });
+
       if (result.success) {
-        navigate("/home");
+        setShowAlert(true);
       } else {
         setError(result.message);
       }
     } catch (err) {
-      setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+      setError(err);
     }
   };
 
   // manejar cambios
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const processedValue = name === "email" ? value.trim().toLowerCase() : value.trim();
+
+    const processedValue =
+      name === "email" ? value.trim().toLowerCase() : value;
 
     setCredentials((prev) => ({ ...prev, [name]: processedValue }));
 
@@ -86,29 +99,42 @@ export default function Login() {
     <Container className="d-flex justify-content-center align-items-center">
       <Modal show={showAlert} onHide={() => setShowAlert(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>¡Información importante!</Modal.Title>
+          <Modal.Title>Usuario creado con Exito!!</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p> Hola Nicolás!</p>
-          <p>
-            Usuario: <strong>admin@mail.com</strong>
-            <br />
-            contraseña: <strong>Admin1234</strong>
-          </p>
-          <p>Tambíen podés crear un usuario nuevo</p>
+          <p> Logeate para ingresar a la aplicación</p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowAlert(false)}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setShowAlert(false);
+              navigate("/login");
+            }}
+          >
             Entendido
           </Button>
         </Modal.Footer>
       </Modal>
       <Card style={{ width: "24rem" }}>
         <Card.Body>
-          <Card.Title className="mb-4 text-center"><strong>Login</strong></Card.Title>
+          <Card.Title className="mb-4 text-center">
+            <strong>Registrarse</strong>
+          </Card.Title>
           {error && <Alert variant="danger">{error}</Alert>}
 
           <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={credentials.name}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
               <Form.Control
@@ -160,6 +186,15 @@ export default function Login() {
               </div>
             </Form.Group>
 
+            <Form.Group className="mb-3">
+              <Form.Label>Repetir Contraseña</Form.Label>
+              <Form.Control
+                type="password"
+                name="repeatPassword"
+                onChange={handleChange}
+              />
+            </Form.Group>
+
             <Button variant="primary" type="submit" className="w-100">
               {isLoading ? (
                 <>
@@ -173,11 +208,9 @@ export default function Login() {
                   <span className="ms-2">Cargando...</span>
                 </>
               ) : (
-                "Ingresar"
+                "Continuar"
               )}
             </Button>
-            <p className="m-3 text-center">Si no tenés cuenta {''}
-              <Link  to="/register" className={styles.linkHoverUnderline} >registrate acá</Link></p>
           </Form>
         </Card.Body>
       </Card>

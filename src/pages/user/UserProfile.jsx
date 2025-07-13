@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const UserProfile = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,7 +48,8 @@ const UserProfile = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     //Borrar espacios en email
-    const processedValue = name === "email" ? value.trim().toLowerCase() : value.trim();
+    const processedValue =
+      name === "email" ? value.trim().toLowerCase() : value.trim();
 
     setUserData((prev) => ({ ...prev, [name]: processedValue }));
 
@@ -66,38 +67,40 @@ const UserProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
+
     //validar email
     if (!emailRegex.test(userData.email)) {
       setError("Email inválido");
       return;
     }
-    
+
     //validar password
-    if (!Object.values(passwordChecks).every(Boolean)) {
+    if (userData.password && !Object.values(passwordChecks).every(Boolean)) {
       setError("La contraseña no cumple todos los requisitos");
       return;
     }
-    
+
     try {
       // Validación de contraseñas
       if (userData.password && userData.password !== userData.repeatPassword) {
         setError("Las contraseñas no coinciden");
         return;
       }
-      
+
       setIsLoading(true);
-      
+
       // Actualizar datos
       await updateUser({
+        id: user.id,
         name: userData.name,
         email: userData.email,
         ...(userData.password && { password: userData.password }),
       });
 
       setShowSuccessModal(true);
-    } catch (err) {
-      setError("Error al actualizar los datos");
+    } catch (error) {
+      console.log(error)
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -128,9 +131,7 @@ const UserProfile = () => {
           <p>Tus datos se han guardado correctamente.</p>
           <p>Nombre: {user?.name || ""}</p>
           <p>Email: {user?.email || ""}</p>
-          {userData.password ? (
-            <p>Contraseña actualizada</p>
-          ) : null}
+          {userData.password ? <p>Contraseña actualizada</p> : null}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowSuccessModal(false)}>
@@ -238,7 +239,6 @@ const UserProfile = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            
 
             <div className="d-grid gap-2">
               <Button variant="primary" type="submit" disabled={isLoading}>
