@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from '../../hooks/useAuth';
 
 const UserProfile = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);

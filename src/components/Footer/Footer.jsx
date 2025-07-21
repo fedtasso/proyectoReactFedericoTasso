@@ -7,11 +7,11 @@ export default function Footer() {
         <Container>
           <Row className="justify-content-center align-items-center">
             <Col md={4} className="text-center text-md-start mb-3 mb-md-0">
-              <div className="d-flex align-items-center justify-content-center justify-content-md-start">
+              <div className="d-flex align-items-center justify-content-center justify-content-md-start d-none d-md-block">
                 <i className="bi bi-cart3 fs-4 text-primary me-2"></i>
                 <span className="fs-5 fw-bold">Carrito de Compras</span>
-              </div>
               <p className="mt-2 small">Tu tienda online favorita</p>
+              </div>
             </Col>
 
             <Col md={4} className="text-center mb-3 mb-md-0">
@@ -26,7 +26,7 @@ export default function Footer() {
                   <i className="bi bi-facebook fs-5"></i>
                 </a>
               </div>
-              <p className="small mb-0">Nuestras redes</p>
+              <p className="small mb-0 d-none d-md-block">Nuestras redes</p>
             </Col>
 
             <Col md={4} className="text-center text-md-end">

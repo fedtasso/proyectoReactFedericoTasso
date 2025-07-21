@@ -1,0 +1,15 @@
+.hoverBgPrimary:hover {
+  background-color: #ced4da;
+  color: white; 
+}
+
+.cartBadge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.25em 0.1em;
+  border-radius: 999px;
+}

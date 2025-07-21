@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from "react-router-dom";
 import styles from './Login.module.css';
 import {
@@ -49,7 +49,7 @@ export default function Login() {
     try {
       const result = await login(credentials);
       if (result.success) {
-        navigate("/home");
+        navigate("/");
       } else {
         setError(result.message);
       }

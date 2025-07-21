@@ -1,13 +1,15 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
+import { API_URL_USERS } from "../config/constants";
 
-const AuthContext = createContext();
-const API_URL = "https://686a8aede559eba9087045fc.mockapi.io/api/users";
+export const AuthContext = createContext();
+const API_URL = API_URL_USERS
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authorized, setAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,6 +27,7 @@ export const AuthProvider = ({ children }) => {
       const userData = data.find(
         (user) => user.email === credentials.email.trim().toLowerCase()
       );
+
       if (!userData) throw new Error("Usuario no encontrado");
 
       if (userData.password !== credentials.password)
@@ -86,7 +89,7 @@ export const AuthProvider = ({ children }) => {
         password: credentials.password.trim(),
       };
 
-      //crear usuario
+      //crear usuario en db
       const postResponse = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,6 +111,7 @@ export const AuthProvider = ({ children }) => {
       //recuperar datos local de usuario
       const credentials = localStorage.getItem("user");
       if (!credentials) {
+        clearSession()
         return;
       }
       const localUserData = JSON.parse(credentials);
@@ -126,17 +130,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Token no válido");
       }
 
-      if (
-        !authorized ||
-        user?.id !== localUserData.id ||
-        user?.token !== localUserData.token
-      ) {
-        setAuthorized(true);
-        setUser(localUserData);
-      }
-      console.log("acceso autorizado");
+      setAuthorized(true);
+      setUser(localUserData);
+
+    
     } catch (error) {
-      // TO DO mostrar mensaje por emergente
+      clearSession();
+      toast.warm('Debes iniciar sesion nuevamente');
       console.error("Error al validar sesión:", error);
     }
   };
@@ -164,16 +164,15 @@ export const AuthProvider = ({ children }) => {
       const usersData = await fetch(API_URL);
       if (!usersData.ok) throw new Error("Error en la petición");
       const usersDataObject = await usersData.json();
-      
+
       //verificar usuario por email
       const userExists = usersDataObject.find(
-        (user) => user.email === userFormData.email.trim().toLowerCase() && user.id !== userFormData.id
+        (user) =>
+          user.email === userFormData.email.trim().toLowerCase() &&
+          user.id !== userFormData.id
       );
-      console.log("existe", userExists);
-      if (userExists)
-        throw new Error(
-          "El email ya se encuentra registrado"
-        );
+   
+      if (userExists) throw new Error("El email ya se encuentra registrado");
 
       // actualizar usuario
       const response = await fetch(`${API_URL}/${user.id}`, {
@@ -195,7 +194,6 @@ export const AuthProvider = ({ children }) => {
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
       return { success: true, user: response.data };
-
     } catch (error) {
       throw error;
     }
@@ -237,5 +235,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
