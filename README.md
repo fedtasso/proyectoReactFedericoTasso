@@ -4,6 +4,9 @@ Este proyecto consiste en la implementación de un e-commerce del lado del front
 
 ---
 
+## Deploy
+    https://fedtasso-ecommerce.netlify.app/
+
 ## Objetivos
 
 - Implementar un e-commerce utilizando React.
@@ -72,3 +75,4 @@ Estructura general:
 - Bootstrap
 - Mokapi
 - react-toastify
+
