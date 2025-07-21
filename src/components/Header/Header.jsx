@@ -50,7 +50,7 @@ function Header() {
 
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           {/* Sección de usuario/carrito/login */}
-          <Nav className="flex-column flex-lg-row align-items-end align-items-lg-center px-3">
+          <Nav className="flex-column flex-lg-row align-items-end align-items-lg-center">
             {authorized ? (
               <>
                 <Nav className="d-flex align-items-end">
@@ -58,7 +58,7 @@ function Header() {
                     as={Link}
                     to="/admin/products"
                     href="#link"
-                    className={`fw-bold border border-dark border-3 rounded ${styles.hoverBgPrimary}`}
+                    className={`fw-bold border border-dark border-3 rounded px-1 ${styles.hoverBgPrimary}`}
                   >
                     Administrar
                   </Nav.Link>
@@ -80,6 +80,8 @@ function Header() {
                   title={<i className="bi bi-person-circle fs-4"></i>}
                   id="user-dropdown"
                   align="end"
+                  className="text-end"
+                  
                 >
                   <NavDropdown.Item>
                     <strong>Hola {user?.name || "Usuario"}</strong>
