@@ -1,6 +1,6 @@
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import logoFed from "../../assets/logoFed.png";
 import styles from "./Header.module.css";
@@ -10,11 +10,10 @@ function Header() {
   const { user, authorized, isLoading, logout } = useAuth();
   const { totalItems } = useCart();
 
+  if (isLoading) return <div></div>;
 
-  if (isLoading) return  <div></div>
-      
   return (
-    <Navbar expand="lg" className="bg-light"  fixed="top" >
+    <Navbar expand="lg" className="bg-light" fixed="top">
       <Container fluid>
         <Navbar.Brand as={Link} to="/">
           <img
@@ -25,27 +24,50 @@ function Header() {
             className="d-inline-block align-top"
           />
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+
+        {/* carrito visible en movil */}
+        <div className="d-flex align-items-center ms-auto mb-3">
+          {authorized && (
+            <Nav.Link
+              as={Link}
+              to="/cart"
+              className="position-relative px-4 d-lg-none"
+            >
+              <i className="bi bi-cart3 fs-4"></i>
+              {totalItems() > 0 && (
+                <span className="position-absolute top-10 start-80 translate-middle badge rounded-pill bg-danger">
+                  {totalItems()}
+                </span>
+              )}
+            </Nav.Link>
+          )}
+
+          <Navbar.Toggle
+            aria-controls="basic-navbar-nav"
+            className="border-0"
+          />
+        </div>
+
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           {/* Sección de usuario/carrito/login */}
-          <Nav className="flex-column flex-lg-row align-items-center align-items-lg-center px-3">
+          <Nav className="flex-column flex-lg-row align-items-end align-items-lg-center px-3">
             {authorized ? (
               <>
-                <Nav className="me-3 d-flex align-items-end">
+                <Nav className="d-flex align-items-end">
                   <Nav.Link
-                  as={Link}
-                  to="/admin/products"
-                  
+                    as={Link}
+                    to="/admin/products"
                     href="#link"
                     className={`fw-bold border border-dark border-3 rounded ${styles.hoverBgPrimary}`}
                   >
                     Administrar
                   </Nav.Link>
                 </Nav>
+
                 <Nav.Link
                   as={Link}
                   to="/cart"
-                  className="position-relative px-3"
+                  className="position-relative px-3 d-none d-lg-block"
                 >
                   <i className="bi bi-cart3 fs-4"></i>
                   {totalItems() > 0 && (
