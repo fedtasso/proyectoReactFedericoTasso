@@ -8,7 +8,6 @@ import {
   Container,
   Alert,
   Card,
-  Modal,
   Spinner,
 } from "react-bootstrap";
 
@@ -83,25 +82,6 @@ export default function Login() {
 
   return (
     <Container className="d-flex justify-content-center align-items-center">
-      <Modal show={showAlert} onHide={() => setShowAlert(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>¡Información importante!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p> Hola Nicolás!</p>
-          <p>
-            Usuario: <strong>admin@mail.com</strong>
-            <br />
-            contraseña: <strong>Admin1234</strong>
-          </p>
-          <p>Tambíen podés crear un usuario nuevo</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowAlert(false)}>
-            Entendido
-          </Button>
-        </Modal.Footer>
-      </Modal>
       <Card style={{ width: "24rem" }}>
         <Card.Body>
           <Card.Title className="mb-4 text-center"><strong>Login</strong></Card.Title>

@@ -1,19 +1,15 @@
 import { useState, useEffect } from "react";
-import {
-  Button,
-  Table,
-  Modal,
-  Form,
-  Container,
-  Alert,
-} from "react-bootstrap";
+import { Button, Table, Modal, Form, Container, Alert } from "react-bootstrap";
 import {
   getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
 } from "../../services/AdminProductsService";
-import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { useAuth } from '../../hooks/useAuth';
+import { LoadingSpinner } from "../../components/LoadingSpinner";
+import { toast } from "react-toastify";
+
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -21,6 +17,7 @@ export const AdminProducts = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     price: "",
@@ -55,6 +52,13 @@ export const AdminProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isAdmin) {
+      toast.error('Solo los administradores pueden modificar o agregar productos');
+      setShowModal(false);
+      return;
+    }
+
     try {
       if (currentProduct) {
         await updateProduct(currentProduct.id, formData);
@@ -82,6 +86,11 @@ export const AdminProducts = () => {
   };
 
   const handleDelete = async (id) => {
+     if (!isAdmin) {
+      toast.error('Solo los administradores pueden borrar productos');
+      setShowModal(false);
+      return;
+    }
     if (window.confirm("¿Estás seguro de eliminar este producto?")) {
       try {
         await deleteProduct(id);
@@ -103,12 +112,9 @@ export const AdminProducts = () => {
     setCurrentProduct(null);
   };
 
-   
-    if (loading) {
-      return (
-        <LoadingSpinner text="Cargando información..."/>
-      );
-    }
+  if (loading) {
+    return <LoadingSpinner text="Cargando información..." />;
+  }
 
   return (
     <Container className="mt-4">
@@ -207,8 +213,8 @@ export const AdminProducts = () => {
                 required
               />
             </Form.Group>
-            <Form.Group className="mb-3"> 
-              <Form.Label >Descripción</Form.Label>
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción</Form.Label>
               <Form.Control
                 as="textarea"
                 name="description"

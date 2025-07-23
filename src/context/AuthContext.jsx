@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authorized, setAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false)
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,7 +36,10 @@ export const AuthProvider = ({ children }) => {
 
       //borrar password de objeto userData
       const { password, ...safeUser } = userData;
-
+      console.log(userData)
+      if (userData.email === "admin@mail.com"){
+        setIsAdmin(true)
+      }
       setUser(safeUser);
       setAuthorized(true);
       localStorage.setItem("user", JSON.stringify(safeUser));
@@ -54,6 +58,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setAuthorized(false);
+    setIsAdmin(false)
     localStorage.removeItem("user");
     navigate("/login");
   };
@@ -224,6 +229,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isLoading,
         authorized,
+        isAdmin,
         login,
         logout,
         register,
