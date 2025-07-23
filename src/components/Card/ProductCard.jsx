@@ -23,6 +23,9 @@ const ProductCard = ({ product }) => {
     category: product.category,
   });
 
+  toast.success('Producto agregado al carrito', {
+    icon: <i className="bi bi-cart-check-fill text-success"></i>,
+  });
 };
 
   return (
