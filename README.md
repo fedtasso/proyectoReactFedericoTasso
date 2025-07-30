@@ -56,7 +56,7 @@ Estructura general:
 
 1. Clonar el repositorio:
    
-    git clone https://github.com/tu-usuario/tu-repo.git
+    git clone https://github.com/fedtasso/proyectoReactFedericoTasso/tree/main
 
 2. Instalar dependencias:
 

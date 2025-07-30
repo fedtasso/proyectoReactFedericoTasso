@@ -4,18 +4,17 @@ import { toast } from "react-toastify";
 import { API_URL_USERS } from "../config/constants";
 
 export const AuthContext = createContext();
-const API_URL = API_URL_USERS
+const API_URL = API_URL_USERS;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authorized, setAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  //----------------------------------//
-  //----------------------------------//
+  // -------------------------------------------------------------------//
   const login = async (credentials) => {
     setIsLoading(true);
     try {
@@ -29,22 +28,26 @@ export const AuthProvider = ({ children }) => {
         (user) => user.email === credentials.email.trim().toLowerCase()
       );
 
+      //verificar usuario y contraseña
       if (!userData) throw new Error("Usuario no encontrado");
-
       if (userData.password !== credentials.password)
         throw new Error("Contraseña incorrecta");
 
       //borrar password de objeto userData
       const { password, ...safeUser } = userData;
-      console.log(userData)
-      if (userData.email === "admin@mail.com"){
-        setIsAdmin(true)
+
+      //verificar si es administrador
+      if (userData.email === "admin@mail.com") {
+        setIsAdmin(true);
       }
+
+      // dar permisos
       setUser(safeUser);
       setAuthorized(true);
       localStorage.setItem("user", JSON.stringify(safeUser));
       return { success: true, user: safeUser };
     } catch (error) {
+      // borrar usuario y autorizaciones
       setUser(null);
       setAuthorized(false);
       return { success: false, message: error.message };
@@ -53,27 +56,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //----------------------------------//
-  //----------------------------------//
+  // -------------------------------------------------------------------//
   const logout = () => {
     setUser(null);
     setAuthorized(false);
-    setIsAdmin(false)
+    setIsAdmin(false);
     localStorage.removeItem("user");
     navigate("/login");
   };
 
-  //----------------------------------//
-  //----------------------------------//
+  // -------------------------------------------------------------------//
   const clearSession = () => {
     // Solo limpia la sesión sin redirigir
     setUser(null);
     setAuthorized(false);
+    setIsAdmin(false);
     localStorage.removeItem("user");
   };
 
-  //----------------------------------//
-  //----------------------------------//
+  // -------------------------------------------------------------------//
   const register = async (credentials) => {
     try {
       //verificar si usuario existe
@@ -87,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       );
       if (userExists) throw new Error("El email ya se encuentra registrado");
 
-      // Crear nuevo usuario
+      // datos de usuario nuevo
       const newUser = {
         name: credentials.name.trim(),
         email: credentials.email.trim().toLowerCase(),
@@ -100,7 +101,9 @@ export const AuthProvider = ({ children }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newUser),
       });
-      if (!postResponse)
+
+      //verificar respuesta
+      if (!postResponse.ok)
         throw new Error("Error al crear el usuario, intente nuevamente");
 
       return { success: true, user: response.data };
@@ -109,14 +112,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //----------------------------------//
-  //----------------------------------//
+  // -------------------------------------------------------------------//
   const checkAuth = async () => {
     try {
       //recuperar datos local de usuario
       const credentials = localStorage.getItem("user");
       if (!credentials) {
-        clearSession()
+        clearSession();
         return;
       }
       const localUserData = JSON.parse(credentials);
@@ -137,22 +139,21 @@ export const AuthProvider = ({ children }) => {
 
       setAuthorized(true);
       setUser(localUserData);
-
-    
     } catch (error) {
       clearSession();
-      toast.warm('Debes iniciar sesion nuevamente');
-      console.error("Error al validar sesión:", error);
+      toast.warm("Debes iniciar sesión nuevamente");
+      console.error("Error al validar sesión:");
     }
   };
 
+  // validar sesión en cada cambio de página
   useEffect(() => {
     const verifyAuth = async () => {
       try {
         setIsLoading(true);
         await checkAuth();
       } catch (error) {
-        console.error("Error al validar sesión:", error);
+        console.error("Error al validar sesión:");
       } finally {
         setIsLoading(false);
       }
@@ -161,8 +162,8 @@ export const AuthProvider = ({ children }) => {
     verifyAuth();
   }, [location.pathname]);
 
-  //----------------------------------//
-  //----------------------------------//
+  
+  // -------------------------------------------------------------------//
   const updateUser = async (userFormData) => {
     try {
       // verificar si email existe
@@ -176,7 +177,7 @@ export const AuthProvider = ({ children }) => {
           user.email === userFormData.email.trim().toLowerCase() &&
           user.id !== userFormData.id
       );
-   
+
       if (userExists) throw new Error("El email ya se encuentra registrado");
 
       // actualizar usuario
